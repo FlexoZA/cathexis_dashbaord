@@ -1,0 +1,9 @@
+# Supabase local files
+.branches
+.temp
+config.toml
+
+# Supabase functions
+functions/**/.env*
+functions/**/node_modules
+
