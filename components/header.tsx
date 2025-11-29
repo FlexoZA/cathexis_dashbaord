@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Menu, LogOut } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/auth"
 import { useAuth } from "./auth-provider"
 
@@ -29,13 +30,14 @@ export function Header() {
         <nav className="flex items-center gap-4 relative">
           {user && (
             <>
-              <button 
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 hover:bg-gray-100 rounded-md transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400"
                 aria-label="Menu"
               >
-                <Menu className="w-5 h-5 text-gray-700" />
-              </button>
+                <Menu className="w-8 h-8" />
+              </Button>
               
               {isMenuOpen && (
                 <>
@@ -43,18 +45,19 @@ export function Header() {
                     className="fixed inset-0 z-10" 
                     onClick={() => setIsMenuOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-20">
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white border rounded-md shadow-lg z-20">
                     <div className="py-1">
-                      <div className="px-4 py-2 text-sm text-gray-600 border-b border-gray-200">
+                      <div className="px-4 py-2 text-sm text-muted-foreground border-b">
                         {user.email}
                       </div>
-                      <button
+                      <Button
+                        variant="ghost"
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="w-full justify-start hover:bg-gray-100"
                       >
                         <LogOut className="w-4 h-4" />
                         Logout
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </>

@@ -2,6 +2,15 @@
 
 import { useState, useMemo, useEffect } from "react"
 import { Eye, Play, Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { supabase } from "@/lib/supabase"
 import { Device as DBDevice } from "@/lib/types/database"
 import { AddDeviceDialog } from "./add-device-dialog"
@@ -128,51 +137,53 @@ export function DeviceList() {
   }, [devices, searchTerm, statusFilter, groupFilter])
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search devices..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 text-sm"
-          />
-        </div>
-        <div className="sm:w-48">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 text-sm bg-white"
-          >
-            <option value="all">All Status</option>
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-            <option value="warning">Warning</option>
-            <option value="maintenance">Maintenance</option>
-          </select>
-        </div>
-        <div className="sm:w-48">
-          <select
-            value={groupFilter}
-            onChange={(e) => setGroupFilter(e.target.value)}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400 text-sm bg-white"
-          >
-            <option value="all">All Groups</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.name}>
-                {group.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      
-      <hr className="border-gray-300 mb-6" />
-      
+    <div className="w-full">
       <div className="mb-6 flex justify-end">
         <AddDeviceDialog groups={groups} onDeviceAdded={fetchDevices} />
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              type="text"
+              placeholder="Search devices..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="sm:w-48">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="online">Online</SelectItem>
+                <SelectItem value="offline">Offline</SelectItem>
+                <SelectItem value="warning">Warning</SelectItem>
+                <SelectItem value="maintenance">Maintenance</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="sm:w-48">
+            <Select value={groupFilter} onValueChange={setGroupFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Groups" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Groups</SelectItem>
+                {groups.map((group) => (
+                  <SelectItem key={group.id} value={group.name}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       {loading && (
@@ -183,13 +194,13 @@ export function DeviceList() {
 
       {error && (
         <div className="text-center py-12">
-          <p className="text-red-600">{error}</p>
-          <button 
+          <p className="text-destructive">{error}</p>
+          <Button 
             onClick={fetchDevices}
-            className="mt-4 px-4 py-2 text-sm text-white bg-gray-800 hover:bg-gray-700 rounded-md"
+            className="mt-4"
           >
             Retry
-          </button>
+          </Button>
         </div>
       )}
 
@@ -209,18 +220,9 @@ export function DeviceList() {
             <div className="p-6 flex-1">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="text-base font-semibold text-gray-900">
-                      {device.device_friendly_name}
-                    </h3>
-                    <span
-                      className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
-                        statusConfig[device.status].color
-                      }`}
-                    >
-                      {statusConfig[device.status].label}
-                    </span>
-                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">
+                    {device.device_friendly_name}
+                  </h3>
                   <p className="text-sm text-gray-600 mb-2">
                     {device.device_serial}
                   </p>
@@ -230,21 +232,25 @@ export function DeviceList() {
                     </span>
                   )}
                 </div>
-                <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-white font-bold flex-shrink-0 ml-3">
-                  {device.device_friendly_name.charAt(0)}
-                </div>
+                <span
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full border flex-shrink-0 ml-3 h-fit ${
+                    statusConfig[device.status].color
+                  }`}
+                >
+                  {statusConfig[device.status].label}
+                </span>
               </div>
             </div>
             <div className="border-t border-gray-200 p-4 bg-gray-50/50 rounded-b-lg">
               <div className="flex gap-2">
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-md transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400">
+                <Button variant="outline" className="flex-1">
                   <Eye className="w-4 h-4" />
                   View
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:border-gray-400 rounded-md transition-colors focus:outline-none focus:ring-1 focus:ring-gray-400 focus:border-gray-400">
+                </Button>
+                <Button variant="outline" className="flex-1">
                   <Play className="w-4 h-4" />
                   Stream
-                </button>
+                </Button>
               </div>
             </div>
           </div>
