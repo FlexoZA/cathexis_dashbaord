@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import Link from "next/link"
 import { Eye, Play, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,7 +15,6 @@ import {
 import { supabase } from "@/lib/supabase"
 import { Device as DBDevice } from "@/lib/types/database"
 import { AddDeviceDialog } from "./add-device-dialog"
-import { DeviceViewDialog } from "./device-view-dialog"
 
 interface Device {
   id: number
@@ -244,7 +244,12 @@ export function DeviceList() {
             </div>
             <div className="border-t border-gray-200 p-4 bg-gray-50/50 rounded-b-lg">
               <div className="flex gap-2">
-                <DeviceViewDialog device={device} />
+                <Button variant="outline" className="flex-1" asChild>
+                  <Link href={`/device/${device.id}`}>
+                    <Eye className="w-4 h-4" />
+                    View
+                  </Link>
+                </Button>
                 <Button variant="outline" className="flex-1">
                   <Play className="w-4 h-4" />
                   Stream
