@@ -40,7 +40,7 @@ const profileOptions = [
   { value: 1, label: 'Low Resolution (360p)' }
 ]
 
-const STREAMING_SERVER_URL = 'https://labsdb.cwe.cloud:9000'
+const STREAMING_SERVER_URL = 'http://185.202.223.35:9000'
 
 export function LiveStreamDialog({ serial, deviceName }: LiveStreamDialogProps) {
   const [open, setOpen] = useState(false)
@@ -59,21 +59,35 @@ export function LiveStreamDialog({ serial, deviceName }: LiveStreamDialogProps) 
   // Cleanup on dialog close
   useEffect(() => {
     if (!open) {
-      // Clean up player
-      if (playerRef.current) {
-        console.log("DEBUG::LiveStreamDialog", "Disposing player on dialog close")
-        try {
-          playerRef.current.dispose()
-        } catch (e) {
-          console.error("DEBUG::LiveStreamDialog", "Error disposing player:", e)
-        }
-        playerRef.current = null
-      }
+      console.log("DEBUG::LiveStreamDialog", "Dialog closing, cleaning up...")
 
-      // Clear polling interval
+      // Clear polling interval first
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current)
         pollingIntervalRef.current = null
+      }
+
+      // Dispose player safely
+      if (playerRef.current) {
+        try {
+          console.log("DEBUG::LiveStreamDialog", "Disposing Video.js player on dialog close")
+          playerRef.current.dispose()
+        } catch (e) {
+          console.error("DEBUG::LiveStreamDialog", "Error disposing player on dialog close:", e)
+        } finally {
+          playerRef.current = null
+        }
+      }
+
+      // Clear container safely
+      if (containerRef.current) {
+        try {
+          while (containerRef.current.firstChild) {
+            containerRef.current.removeChild(containerRef.current.firstChild)
+          }
+        } catch (e) {
+          console.error("DEBUG::LiveStreamDialog", "Error clearing container on dialog close:", e)
+        }
       }
 
       // Reset state
@@ -86,9 +100,29 @@ export function LiveStreamDialog({ serial, deviceName }: LiveStreamDialogProps) 
   // Auto-stop stream when dialog closes (cleanup)
   useEffect(() => {
     return () => {
+      console.log("DEBUG::LiveStreamDialog", "Component unmounting, cleaning up...")
+
+      // Clear polling interval
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+        pollingIntervalRef.current = null
+      }
+
+      // Dispose player safely
+      if (playerRef.current) {
+        try {
+          console.log("DEBUG::LiveStreamDialog", "Disposing Video.js player on unmount")
+          playerRef.current.dispose()
+        } catch (e) {
+          console.error("DEBUG::LiveStreamDialog", "Error disposing player on unmount:", e)
+        } finally {
+          playerRef.current = null
+        }
+      }
+
+      // Stop stream if active
       if (status === 'active' || status === 'starting') {
-        console.log("DEBUG::LiveStreamDialog", "Component unmounting, stopping stream")
-        // Best effort stream stop via API route
+        console.log("DEBUG::LiveStreamDialog", "Stopping active stream on unmount")
         fetch('/api/stream/stop', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -110,22 +144,30 @@ export function LiveStreamDialog({ serial, deviceName }: LiveStreamDialogProps) 
     }
 
     const initializePlayer = () => {
-      if (!containerRef.current) return
+      if (!containerRef.current) {
+        console.log("DEBUG::LiveStreamDialog", "No container ref, skipping player init")
+        return
+      }
 
-      // Dispose existing player
+      // Dispose existing player safely
       if (playerRef.current) {
         try {
           console.log("DEBUG::LiveStreamDialog", "Disposing existing player")
           playerRef.current.dispose()
         } catch (e) {
-          console.error("DEBUG::LiveStreamDialog", "Error disposing player:", e)
+          console.error("DEBUG::LiveStreamDialog", "Error disposing existing player:", e)
+        } finally {
+          playerRef.current = null
         }
-        playerRef.current = null
       }
 
-      // Clear container
-      while (containerRef.current.firstChild) {
-        containerRef.current.removeChild(containerRef.current.firstChild)
+      // Clear container safely
+      try {
+        while (containerRef.current.firstChild) {
+          containerRef.current.removeChild(containerRef.current.firstChild)
+        }
+      } catch (e) {
+        console.error("DEBUG::LiveStreamDialog", "Error clearing container:", e)
       }
 
       // Create video element
@@ -199,7 +241,7 @@ export function LiveStreamDialog({ serial, deviceName }: LiveStreamDialogProps) 
       
       // Construct HLS URL directly to streaming server
       // HLS must be loaded directly from the streaming server, not through API proxy
-      const hlsUrl = `${STREAMING_SERVER_URL}/cathexis.cwe.cloud/hls/${serial}/${camera}/${profile}/stream.m3u8`
+      const hlsUrl = `${STREAMING_SERVER_URL}${data.stream_url || `/hls/${serial}/${camera}/${profile}/stream.m3u8`}`
       console.log("DEBUG::LiveStreamDialog", "HLS URL:", hlsUrl)
       setStreamUrl(hlsUrl)
       
@@ -245,10 +287,27 @@ export function LiveStreamDialog({ serial, deviceName }: LiveStreamDialogProps) 
         pollingIntervalRef.current = null
       }
 
-      // Dispose player
+      // Dispose player safely
       if (playerRef.current) {
-        playerRef.current.dispose()
-        playerRef.current = null
+        try {
+          console.log("DEBUG::LiveStreamDialog", "Disposing Video.js player")
+          playerRef.current.dispose()
+        } catch (e) {
+          console.error("DEBUG::LiveStreamDialog", "Error disposing Video.js player:", e)
+        } finally {
+          playerRef.current = null
+        }
+      }
+
+      // Clear container safely
+      if (containerRef.current) {
+        try {
+          while (containerRef.current.firstChild) {
+            containerRef.current.removeChild(containerRef.current.firstChild)
+          }
+        } catch (e) {
+          console.error("DEBUG::LiveStreamDialog", "Error clearing container:", e)
+        }
       }
 
       setStatus('stopped')
