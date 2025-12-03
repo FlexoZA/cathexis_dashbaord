@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
-import { Eye, Play, Search } from "lucide-react"
+import { Eye, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -251,6 +251,7 @@ export function DeviceList() {
                     View
                   </Link>
                 </Button>
+                
                 <LiveStreamDialog 
                   serial={device.device_serial}
                   deviceName={device.device_friendly_name}
