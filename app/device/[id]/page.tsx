@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, Settings, Activity, MapPin, Film, Download, Trash2, Play } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -405,6 +406,16 @@ export default function DevicePage() {
               </div>
             </div>
             <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+            >
+              <Link href={`/device/${device.id}/config`}>
+                <Settings className="w-4 h-4 mr-2" />
+                Device Config
+              </Link>
+            </Button>
               <span
                 className={`text-sm font-medium px-3 py-1 rounded-full border ${
                   statusConfig[device.status || 'offline'].color
