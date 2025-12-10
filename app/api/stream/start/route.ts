@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const API_KEY = process.env.CWE_MVR_API_KEY
+
 export async function POST(request: NextRequest) {
   try {
+    if (!API_KEY) {
+      console.log("DEBUG::StreamStartAPI", "Error:", "Missing API key")
+      return NextResponse.json(
+        { ok: false, error: 'API key not configured' },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const { serial, camera, profile, period = 0 } = body
 
@@ -15,6 +25,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
         camera,

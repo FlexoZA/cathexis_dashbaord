@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const BACKEND_BASE_URL = 'http://185.202.223.35:9000'
+const API_KEY = process.env.CWE_MVR_API_KEY
 
 function buildCommandUrl(serial: string) {
   return `${BACKEND_BASE_URL}/api/units/${encodeURIComponent(serial)}/command`
@@ -8,6 +9,14 @@ function buildCommandUrl(serial: string) {
 
 export async function GET(request: NextRequest) {
   try {
+    if (!API_KEY) {
+      console.log("DEBUG::DeviceConfigAPI", { action: 'request_config_error', error: 'Missing API key' })
+      return NextResponse.json(
+        { ok: false, error: 'API key not configured' },
+        { status: 500 }
+      )
+    }
+
     const serial = request.nextUrl.searchParams.get('serial')
 
     if (!serial) {
@@ -23,6 +32,7 @@ export async function GET(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
         type: 'request_config',
@@ -44,6 +54,14 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
+    if (!API_KEY) {
+      console.log("DEBUG::DeviceConfigAPI", { action: 'update_config_error', error: 'Missing API key' })
+      return NextResponse.json(
+        { ok: false, error: 'API key not configured' },
+        { status: 500 }
+      )
+    }
+
     const body = await request.json()
     const { serial, updates } = body || {}
 
@@ -67,6 +85,7 @@ export async function PATCH(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
         type: 'update_config',
